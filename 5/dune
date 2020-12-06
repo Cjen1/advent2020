@@ -1,0 +1,14 @@
+(library 
+ (name lib)
+ (libraries core async angstrom angstrom-async)
+ (inline_tests)
+ (preprocess (pps ppx_jane))
+ (modules lib)
+ )
+
+(executable
+ (name main)
+ (libraries core async angstrom angstrom-async lib)
+ (preprocess (pps ppx_jane))
+ (modules main)
+ )
