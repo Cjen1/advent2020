@@ -1,0 +1,55 @@
+open! Core
+module Accessor = Accessor_core
+open Accessor.O
+
+module P = struct
+  open Angstrom
+  open Let_syntax
+
+  let is_letter = function 'a' .. 'z' | 'A' .. 'Z' -> true | _ -> false
+
+  let word = take_while1 is_letter
+
+  let integer =
+    take_while1 (function '0' .. '9' -> true | _ -> false) >>| Int.of_string
+
+  type loc = { n : int; e : int } [@@deriving accessors, sexp]
+
+  type dir = DN | DS | DE | DW [@@deriving accessors, sexp]
+
+  type boat = { dir : dir; loc : loc } [@@deriving accessors, sexp]
+
+  type ins =
+    | N of int
+    | S of int
+    | E of int
+    | W of int
+    | L of int
+    | R of int
+    | F of int
+
+  let ins =
+    let%bind c = any_char in
+    let%bind i = integer in
+    match c with
+    | 'N' -> return (N i)
+    | 'S' -> return (S i)
+    | 'E' -> return (E i)
+    | 'W' -> return (W i)
+    | 'L' -> return (L i)
+    | 'R' -> return (R i)
+    | 'F' -> return (F i)
+    | _ -> fail "Not recognised command"
+
+  let input = sep_by1 end_of_line ins
+
+  let start = { dir = DE; loc = { n = 0; e = 0 } }
+
+  let apply_l b =
+    match b.dir with
+    | DE -> { b with dir = DN }
+    | DS -> { b with dir = DE }
+    | DW -> { b with dir = DS }
+    | DN -> { b with dir = DW }
+
+end
